@@ -9,5 +9,5 @@ class Labyrinth:
         self.n, self.m, self.matrix = read_from_file(file_path)
 
     # Zwraca True, jeśli podane pole jest w granicach labiryntu oraz nie jest przeszkodą
-    def is_accessible(self, x, y):
-        return 0 <= x < self.n and 0 <= y < self.m and self.matrix[x][y] == 0
+    def is_accessible(self, position):
+        return 0 <= position.x < self.n and 0 <= position.y < self.m and self.matrix[position.x][position.y] == 0
