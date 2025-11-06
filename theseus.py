@@ -1,3 +1,6 @@
+import copy
+from typing import List
+
 class Theseus:
     # 0 - north
     # 1 - south
@@ -22,8 +25,11 @@ class Theseus:
     #logic matrix
     visited = [[]]
     #visited tiles for backtracking
-    stack = []
+    stack: List[List[int]] = []
 
+    #stats
+    move_count:int = 0
+    move_validation_count:int = 0
 
     def __init__(self, matrix, n, m):
         self.matrix = matrix
@@ -63,8 +69,9 @@ class Theseus:
                 case -1:
                     # backtrack
                     if len(self.stack) == 0:
-                        print("Nie ma rozwiązania")
+                        print("No solution")
                         break
+                    self.move_count += 1
                     previous_position = self.stack.pop()
                     self.positionY = previous_position[0]
                     self.positionX = previous_position[1]
@@ -77,8 +84,7 @@ class Theseus:
                 case 3:
                     self.travel_west()
 
-        print("Labyrinth finished")
-        print(self.visited)
+        self._print_summary()
 
     #dfs with heuristic
     def solve_with_heuristic(self, start_x, start_y):
@@ -117,9 +123,10 @@ class Theseus:
                 case -1:
                     #backtrack
                     if len(self.stack) == 0:
-                        print("Nie ma rozwiązania")
+                        print("No solution found")
                         break
                     previous_position = self.stack.pop()
+                    self.move_count += 1
                     self.positionX = previous_position[1]
                     self.positionY = previous_position[0]
                 case 0:
@@ -131,10 +138,11 @@ class Theseus:
                 case 3:
                     self.travel_west()
 
-        print("Labyrinth finished")
-        print(self.visited)
+        self._print_summary()
 
     def validate_move(self, y:int, x:int) -> bool:
+        self.move_validation_count += 1
+
         # if next move is below bounds
         if self.positionY + y < 0 or self.positionX + x < 0:
             return False
@@ -155,6 +163,7 @@ class Theseus:
         #moving
         self.positionY = self.positionY - 1
         self.update_visited()
+        self.move_count += 1
 
     def travel_east(self):
         self.save_position()
@@ -162,6 +171,7 @@ class Theseus:
         #moving
         self.positionX = self.positionX + 1
         self.update_visited()
+        self.move_count += 1
 
     def travel_south(self):
         self.save_position()
@@ -169,6 +179,7 @@ class Theseus:
         #moving
         self.positionY = self.positionY + 1
         self.update_visited()
+        self.move_count += 1
 
     def travel_west(self):
         self.save_position()
@@ -176,6 +187,7 @@ class Theseus:
         #moving
         self.positionX = self.positionX -1
         self.update_visited()
+        self.move_count += 1
 
     def save_position(self):
         position = (self.positionY, self.positionX)
@@ -183,3 +195,27 @@ class Theseus:
 
     def update_visited(self):
         self.visited[self.positionY][self.positionX] = 1
+
+    def _print_summary(self):
+        print("Labyrinth finished")
+        print("Move validation count: " + str(self.move_validation_count))
+        print("Move count: " + str(self.move_count))
+        self.move_validation_count = 0
+        self.move_count = 0
+
+        final_map = copy.deepcopy(self.matrix)
+
+        for i in range(len(self.matrix)):
+            for j in range(len(self.matrix)):
+                final_map[i][j] = self.matrix[i][j]
+                if self.visited[i][j] != 0:
+                    final_map[i][j] = 2
+
+        for position in self.stack:
+            y = position[0]
+            x = position[1]
+
+            final_map[y][x] = 2
+
+        for map_row in final_map:
+            print(map_row)
