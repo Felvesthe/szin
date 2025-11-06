@@ -51,7 +51,7 @@ class Theseus:
                 print("Starting position above bounds, exiting")
                 return
 
-        logger = AlgorithmLogger("solve", self.n+1, self.m+1)
+        logger = AlgorithmLogger("dfs", self.n+1, self.m+1)
         logger.start_measure()
         #starting position is always visited
         self.update_visited()
@@ -100,7 +100,7 @@ class Theseus:
                 print("Starting position above bounds, exiting")
                 return
 
-        logger = AlgorithmLogger("solve_with_heuristic", self.n+1, self.m+1)
+        logger = AlgorithmLogger("dfs_with_heuristic", self.n+1, self.m+1)
         logger.start_measure()
         #starting position is always visited
         self.update_visited()
