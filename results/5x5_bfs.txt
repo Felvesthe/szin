@@ -1,0 +1,12 @@
+Algorithm: BFS
+Execution time: 0.000215 s
+Peak memory usage: 6.85 KB
+Visited nodes: 23
+Path length: 9
+
+Final matrix:
+3 3 3 3 2
+2 1 2 3 1
+2 2 2 3 3
+2 2 2 2 3
+2 2 2 2 3
