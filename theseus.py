@@ -1,4 +1,5 @@
 import copy
+from AlgorithmLogger import AlgorithmLogger
 from typing import List
 
 class Theseus:
@@ -30,6 +31,7 @@ class Theseus:
     #stats
     move_count:int = 0
     move_validation_count:int = 0
+    total_visited:int = 0
 
     def __init__(self, matrix, n, m):
         self.matrix = matrix
@@ -48,6 +50,9 @@ class Theseus:
         if start_x > self.m or start_y > self.n:
                 print("Starting position above bounds, exiting")
                 return
+
+        logger = AlgorithmLogger("solve", self.n+1, self.m+1)
+        logger.start_measure()
         #starting position is always visited
         self.update_visited()
 
@@ -83,8 +88,8 @@ class Theseus:
                     self.travel_east()
                 case 3:
                     self.travel_west()
-
-        self._print_summary()
+        logger.stop_measure()
+        self._print_summary(logger)
 
     #dfs with heuristic
     def solve_with_heuristic(self, start_x, start_y):
@@ -94,6 +99,9 @@ class Theseus:
         if start_x > self.m or start_y > self.n:
                 print("Starting position above bounds, exiting")
                 return
+
+        logger = AlgorithmLogger("solve_with_heuristic", self.n+1, self.m+1)
+        logger.start_measure()
         #starting position is always visited
         self.update_visited()
         while self.positionX != self.n or self.positionY != self.m:
@@ -138,7 +146,8 @@ class Theseus:
                 case 3:
                     self.travel_west()
 
-        self._print_summary()
+        logger.stop_measure()
+        self._print_summary(logger)
 
     def validate_move(self, y:int, x:int) -> bool:
         self.move_validation_count += 1
@@ -163,6 +172,8 @@ class Theseus:
         #moving
         self.positionY = self.positionY - 1
         self.update_visited()
+
+        self.total_visited += 1
         self.move_count += 1
 
     def travel_east(self):
@@ -171,6 +182,8 @@ class Theseus:
         #moving
         self.positionX = self.positionX + 1
         self.update_visited()
+
+        self.total_visited += 1
         self.move_count += 1
 
     def travel_south(self):
@@ -179,6 +192,8 @@ class Theseus:
         #moving
         self.positionY = self.positionY + 1
         self.update_visited()
+
+        self.total_visited += 1
         self.move_count += 1
 
     def travel_west(self):
@@ -187,6 +202,8 @@ class Theseus:
         #moving
         self.positionX = self.positionX -1
         self.update_visited()
+
+        self.total_visited += 1
         self.move_count += 1
 
     def save_position(self):
@@ -196,7 +213,7 @@ class Theseus:
     def update_visited(self):
         self.visited[self.positionY][self.positionX] = 1
 
-    def _print_summary(self):
+    def _print_summary(self, logger:AlgorithmLogger):
         print("Labyrinth finished")
         print("Move validation count: " + str(self.move_validation_count))
         print("Move count: " + str(self.move_count))
@@ -215,7 +232,8 @@ class Theseus:
             y = position[0]
             x = position[1]
 
-            final_map[y][x] = 2
+            final_map[y][x] = 3
 
-        for map_row in final_map:
-            print(map_row)
+        logger.save(final_map, self.stack, self.total_visited)
+        self.total_visited = 0
+
