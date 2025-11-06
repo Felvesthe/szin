@@ -1,15 +1,17 @@
-import time
-import tracemalloc
 from collections import deque
+from heapq import heappush, heappop
 
 from AlgorithmLogger import AlgorithmLogger
 from Position import Position
 
 class BfsAlgorithm:
+    def __init__(self, labyrinth):
+        self.labyrinth = labyrinth
 
-    def solve(self, labyrinth):
+    def solve(self, heuristic = False):
         # pomiar czasu i pamięci: początek
-        logger = AlgorithmLogger("bfs", labyrinth.n, labyrinth.m)
+        logger = self.create_logger_instance(heuristic)
+
         logger.start_measure()
 
         max_queue_size = 1 # maksymalna liczba elementów w kolejce (szerokość drzewa)
@@ -17,21 +19,29 @@ class BfsAlgorithm:
 
         # algorytm
         start = Position(0, 0)
-        finish = Position(labyrinth.n - 1, labyrinth.m - 1)
+        finish = Position(self.labyrinth.n - 1, self.labyrinth.m - 1)
 
-        logger.log(f"Start: {start}, Finish: {finish}")
+        logger.log(f'Start: {start}, Finish: {finish}')
 
-        queue = deque([start]) # FIFO
+        queue = []
+        if not heuristic:
+            queue = deque([start]) # FIFO
+        else:
+            counter = 0
+            heappush(queue, (0, counter, start))
         visited = { Position(0, 0): None } # Position(nowe_pole): Position(pole_z_którego_tutaj_przyszliśmy)
                                            # Domyślnie ustawione na start,
                                            # aby program nie wpadał w nieskończoną pętlę
-        result = [[0 if labyrinth.matrix[i][j] == 0 else 1
-                   for j in range(labyrinth.m)] for i in range(labyrinth.n)] # kopia labiryntu z zachowaniem układu
+        result = [[0 if self.labyrinth.matrix[i][j] == 0 else 1
+                   for j in range(self.labyrinth.m)] for i in range(self.labyrinth.n)] # kopia labiryntu z zachowaniem układu
 
         # dopóki kolejka nie jest pusta,
         # to pętla pobiera pierwszy element z kolejki i oznacza go jako odwiedzony w tablicy wynikowej result
         while queue:
-            current_pos = queue.popleft()
+            if not heuristic:
+                current_pos = queue.popleft()
+            else:
+                _, _, current_pos = heappop(queue)
             total_visited += 1
             result[current_pos.x][current_pos.y] = 2 # oznaczenie jako odwiedzone
 
@@ -40,16 +50,23 @@ class BfsAlgorithm:
                 break
 
             for neighbor in current_pos.neighbors():
-                if not labyrinth.is_accessible(neighbor):
-                    logger.log(f"Encountered a wall near {current_pos} -> {neighbor}")
+                if not self.labyrinth.is_accessible(neighbor):
+                    logger.log(f'Encountered a wall near {current_pos} -> {neighbor}')
                     continue
 
                 if neighbor not in visited:
                     visited[neighbor] = current_pos
-                    logger.log(f"Moving {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}")
-                    queue.append(neighbor)
+                    if not heuristic:
+                        logger.log(f'Moving {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}')
+                        queue.append(neighbor)
+                    else:
+                        h = abs(neighbor.x - finish.x) + abs(neighbor.y - finish.y)
+                        logger.log(
+                            f'Moving {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor} with heuristic = {h}')
+                        counter += 1
+                        heappush(queue, (h, counter, neighbor))
                 else:
-                    logger.log(f"Backtracking {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}")
+                    logger.log(f'Backtracking {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}')
 
             # aktualizacja maksymalnej liczby węzłów w kolejce
             if len(queue) > max_queue_size:
@@ -80,6 +97,9 @@ class BfsAlgorithm:
 
         return result
 
+    def create_logger_instance(self, heuristic = False):
+        return AlgorithmLogger('bfs_with_heuristic' if heuristic else 'bfs', self.labyrinth.n, self.labyrinth.m)
+
     # rekonstruuje ścieżkę od końca do początku wg odwiedzin
     def reconstruct_path(self, visited, end_pos):
         path = []
@@ -93,8 +113,8 @@ class BfsAlgorithm:
     def direction(self, a, b):
         dx = b.x - a.x
         dy = b.y - a.y
-        if dx == 1: return "South"
-        if dx == -1: return "North"
-        if dy == 1: return "East"
-        if dy == -1: return "West"
-        return "Unknown"
+        if dx == 1: return 'South'
+        if dx == -1: return 'North'
+        if dy == 1: return 'East'
+        if dy == -1: return 'West'
+        return 'Unknown'
