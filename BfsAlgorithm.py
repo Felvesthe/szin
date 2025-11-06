@@ -2,14 +2,15 @@ import time
 import tracemalloc
 from collections import deque
 
+from AlgorithmLogger import AlgorithmLogger
 from Position import Position
 
 class BfsAlgorithm:
 
     def solve(self, labyrinth):
         # pomiar czasu i pamięci: początek
-        start_time = time.perf_counter()
-        tracemalloc.start()
+        logger = AlgorithmLogger("bfs", labyrinth.n, labyrinth.m)
+        logger.start_measure()
 
         max_queue_size = 1 # maksymalna liczba elementów w kolejce (szerokość drzewa)
         total_visited = 0 # liczba odwiedzonych węzłów
@@ -17,6 +18,9 @@ class BfsAlgorithm:
         # algorytm
         start = Position(0, 0)
         finish = Position(labyrinth.n - 1, labyrinth.m - 1)
+
+        logger.log(f"Start: {start}, Finish: {finish}")
+
         queue = deque([start]) # FIFO
         visited = { Position(0, 0): None } # Position(nowe_pole): Position(pole_z_którego_tutaj_przyszliśmy)
                                            # Domyślnie ustawione na start,
@@ -32,12 +36,20 @@ class BfsAlgorithm:
             result[current_pos.x][current_pos.y] = 2 # oznaczenie jako odwiedzone
 
             if current_pos == finish:
+                logger.log('Finish reached')
                 break
 
             for neighbor in current_pos.neighbors():
-                if labyrinth.is_accessible(neighbor) and neighbor not in visited:
+                if not labyrinth.is_accessible(neighbor):
+                    logger.log(f"Encountered a wall near {current_pos} -> {neighbor}")
+                    continue
+
+                if neighbor not in visited:
                     visited[neighbor] = current_pos
+                    logger.log(f"Moving {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}")
                     queue.append(neighbor)
+                else:
+                    logger.log(f"Backtracking {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}")
 
             # aktualizacja maksymalnej liczby węzłów w kolejce
             if len(queue) > max_queue_size:
@@ -51,22 +63,20 @@ class BfsAlgorithm:
             for pos in path:
                 result[pos.x][pos.y] = 3
         else:
-            print('No path found')
+            logger.log('No path found')
             path = []
 
         # pomiar czasu i pamięci: koniec
-        current_memory, peak_memory = tracemalloc.get_traced_memory()
-        end_time = time.perf_counter()
-        tracemalloc.stop()
+        execution_time, peak_memory_kb = logger.stop_measure()
 
-        execution_time = end_time - start_time
-        peak_memory_kb = peak_memory / 1024
-
-        print(f'Czas wykonania: {execution_time:.6f} s')
-        print(f'Szczytowe użycie pamięci: {peak_memory_kb:.2f} KB')
-        print(f'Liczba odwiedzonych węzłów: {total_visited}')
-        print(f'Maksymalna liczba węzłów w kolejce: {max_queue_size}')
-        print(f'Długość znalezionej ścieżki: {len(path)}')
+        logger.save(
+            result,
+            path,
+            execution_time,
+            peak_memory_kb,
+            total_visited,
+            max_frontier_size=max_queue_size
+        )
 
         return result
 
@@ -78,3 +88,13 @@ class BfsAlgorithm:
             path.append(current_pos)
             current_pos = visited[current_pos] # przypisanie poprzednika do current_pos, np. Position(2, 2): Position(1, 2)
         return path[::-1]
+
+    # potrzebne do logowania kroków
+    def direction(self, a, b):
+        dx = b.x - a.x
+        dy = b.y - a.y
+        if dx == 1: return "South"
+        if dx == -1: return "North"
+        if dy == 1: return "East"
+        if dy == -1: return "West"
+        return "Unknown"
