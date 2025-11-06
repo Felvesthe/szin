@@ -2,11 +2,14 @@ from BfsAlgorithm import BfsAlgorithm
 from Labyrinth import Labyrinth
 from theseus import Theseus
 
-labirynt1 = Labyrinth('data/5x5.txt')
+labyrinth1 = Labyrinth('data/5x5.txt')
+labyrinth2 = Labyrinth('data/256x256.txt')
+labyrinth3 = Labyrinth('data/1048x1280.txt')
+labyrinth4 = Labyrinth('data/2096x2560.txt')
+labyrinth5 = Labyrinth('data/4096x5120.txt')
 
-bfs_algorithm = BfsAlgorithm()
+# bfs = BfsAlgorithm(labyrinth1)
+# bfs.solve(heuristic=False)
 
-#theseus = Theseus(labirynt1.matrix, labirynt1.n, labirynt1.m)
-#theseus.solve(0,0)
-
-bfs = bfs_algorithm.solve(labirynt1)
+# theseus = Theseus(labyrinth1.matrix, labyrinth1.n, labyrinth1.m)
+# theseus.solve(0,0)
