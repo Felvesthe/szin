@@ -21,8 +21,6 @@ class BfsAlgorithm:
         start = Position(0, 0)
         finish = Position(self.labyrinth.n - 1, self.labyrinth.m - 1)
 
-        logger.log(f'Start: {start}, Finish: {finish}')
-
         queue = []
         if not heuristic:
             queue = deque([start]) # FIFO
@@ -46,27 +44,20 @@ class BfsAlgorithm:
             result[current_pos.x][current_pos.y] = 2 # oznaczenie jako odwiedzone
 
             if current_pos == finish:
-                logger.log('Finish reached')
                 break
 
             for neighbor in current_pos.neighbors():
                 if not self.labyrinth.is_accessible(neighbor):
-                    logger.log(f'Encountered a wall near {current_pos} -> {neighbor}')
                     continue
 
                 if neighbor not in visited:
                     visited[neighbor] = current_pos
                     if not heuristic:
-                        logger.log(f'Moving {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}')
                         queue.append(neighbor)
                     else:
                         h = abs(neighbor.x - finish.x) + abs(neighbor.y - finish.y)
-                        logger.log(
-                            f'Moving {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor} with heuristic = {h}')
                         counter += 1
                         heappush(queue, (h, counter, neighbor))
-                else:
-                    logger.log(f'Backtracking {self.direction(current_pos, neighbor)} from {current_pos} to {neighbor}')
 
             # aktualizacja maksymalnej liczby węzłów w kolejce
             if len(queue) > max_queue_size:
@@ -80,7 +71,7 @@ class BfsAlgorithm:
             for pos in path:
                 result[pos.x][pos.y] = 3
         else:
-            logger.log('No path found')
+            print('No path found')
             path = []
 
         # pomiar czasu i pamięci: koniec
@@ -108,13 +99,3 @@ class BfsAlgorithm:
             path.append(current_pos)
             current_pos = visited[current_pos] # przypisanie poprzednika do current_pos, np. Position(2, 2): Position(1, 2)
         return path[::-1]
-
-    # potrzebne do logowania kroków
-    def direction(self, a, b):
-        dx = b.x - a.x
-        dy = b.y - a.y
-        if dx == 1: return 'South'
-        if dx == -1: return 'North'
-        if dy == 1: return 'East'
-        if dy == -1: return 'West'
-        return 'Unknown'

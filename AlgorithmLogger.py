@@ -41,7 +41,3 @@ class AlgorithmLogger:
             f.write('Final matrix:\n')
             for row in result_matrix:
                 f.write(' '.join(map(str, row)) + '\n')
-
-            f.write('\n--- Steps ---\n')
-            for line in self.logs:
-                f.write(line + '\n')
