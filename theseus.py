@@ -53,40 +53,31 @@ class Theseus:
                 y = self.moves[i][0]
                 x = self.moves[i][1]
 
-                # move is not valid
-                if not self.validate_move(y, x):
-                    continue
+                # move is valid, exit loop and make a move
+                if self.validate_move(y,x):
+                    fdirection = i
+                    break
 
-                # makes a move
-                match fdirection:
-                    case -1:
-                        # backtrack
-                        if len(self.stack) == 0:
-                            print("Nie ma rozwiązania")
-                            break
-                        previous_position = self.stack.pop()
-                        self.positionX = previous_position[1]
-                        self.positionY = previous_position[0]
+            # makes a move
+            match fdirection:
+                case -1:
+                    # backtrack
+                    if len(self.stack) == 0:
+                        print("Nie ma rozwiązania")
                         break
-                    case 0:
-                        self.travel_north()
-                        break
-                    case 1:
-                        self.travel_south()
-                        break
-                    case 2:
-                        self.travel_east()
-                        break
-                    case 3:
-                        self.travel_west()
-                        break
+                    previous_position = self.stack.pop()
+                    self.positionY = previous_position[0]
+                    self.positionX = previous_position[1]
+                case 0:
+                    self.travel_north()
+                case 1:
+                    self.travel_south()
+                case 2:
+                    self.travel_east()
+                case 3:
+                    self.travel_west()
 
-            #if no moves available, backtrack and try again
-            previous_position = self.stack.pop()
-            self.positionX = previous_position[1]
-            self.positionY = previous_position[0]
-
-        print("Labyrinth solved")
+        print("Labyrinth finished")
         print(self.visited)
 
     #dfs with heuristic
@@ -140,7 +131,7 @@ class Theseus:
                 case 3:
                     self.travel_west()
 
-        print("Labyrinth solved")
+        print("Labyrinth finished")
         print(self.visited)
 
     def validate_move(self, y:int, x:int) -> bool:
