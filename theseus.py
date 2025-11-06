@@ -24,25 +24,25 @@ class Theseus:
 
     #dfs no heuristic
     # TODO: Dodać sprawdzanie czy wchodzi w krawędź
-    def solve(self, startX, startY):
-        if startX < 0 or startY < 0:
+    def solve(self, start_x, start_y):
+        if start_x < 0 or start_y < 0:
                 print("Starting position below bounds, exiting")
                 return
-        if startX > self.m or startY > self.n:
+        if start_x > self.m or start_y > self.n:
                 print("Starting position above bounds, exiting")
                 return
         self.update_visited()
-        while(self.positionX != self.n or self.positionY != self.m):
-            if self.travelNorth():
+        while self.positionX != self.n or self.positionY != self.m:
+            if self.travel_north():
                 print("Idzie na północ")
                 continue
-            if self.travelEast():
+            if self.travel_east():
                 print("Idzie na wschód")
                 continue
-            if self.travelSouth():
+            if self.travel_south():
                 print("Idzie na południe")
                 continue
-            if self.travelWest():
+            if self.travel_west():
                 print("Idzie na zachód")
                 continue
 
@@ -55,16 +55,16 @@ class Theseus:
         print(self.visited)
 
     #dfs with heuristic
-    def solve_with_heuristic(self, startX, startY):
-        if startX < 0 or startY < 0:
+    def solve_with_heuristic(self, start_x, start_y):
+        if start_x < 0 or start_y < 0:
                 print("Starting position below bounds, exiting")
                 return
-        if startX > self.m or startY > self.n:
+        if start_x > self.m or start_y > self.n:
                 print("Starting position above bounds, exiting")
                 return
         #starting position is always visited
         self.update_visited()
-        while(self.positionX != self.n or self.positionY != self.m):
+        while self.positionX != self.n or self.positionY != self.m:
             # 0 - north
             # 1 - south
             # 2 - east
@@ -86,16 +86,16 @@ class Theseus:
                 x = moves[i][1]
 
                 #if next move is below bounds
-                if (self.positionY + y < 0 or self.positionX + x < 0):
+                if self.positionY + y < 0 or self.positionX + x < 0:
                     continue
                 #if next move is above bounds
-                if (self.positionY + y > self.m or self.positionX + x > self.n):
+                if self.positionY + y > self.m or self.positionX + x > self.n:
                     continue
                 #if has been visited
-                if (self.visited[self.positionY + y][self.positionX + x] == 1):
+                if self.visited[self.positionY + y][self.positionX + x] == 1:
                     continue
                 #if there is an obstacle
-                if (self.matrix[self.positionY + y][self.positionX + x] == 1):
+                if self.matrix[self.positionY + y][self.positionX + x] == 1:
                     continue
 
                 #move is valid, calculate its distance to finish
@@ -113,70 +113,70 @@ class Theseus:
                     self.positionX = previous_position[1]
                     self.positionY = previous_position[0]
                 case 0:
-                    self.travelNorth()
+                    self.travel_north()
                 case 1:
-                    self.travelSouth()
+                    self.travel_south()
                 case 2:
-                    self.travelEast()
+                    self.travel_east()
                 case 3:
-                    self.travelWest()
+                    self.travel_west()
 
         print("Zakonczono labiryntowanie")
         print(self.visited)
 
-    def travelNorth(self):
-        if (self.positionY - 1 < 0):
+    def travel_north(self):
+        if self.positionY - 1 < 0:
             return 0
-        if (self.visited[self.positionY - 1][self.positionX] == 1):
+        if self.visited[self.positionY - 1][self.positionX] == 1:
             return 0
 
-        self.savePosition()
+        self.save_position()
 
         #moving
         self.positionY = self.positionY - 1
         self.update_visited()
         return 1
 
-    def travelEast(self):
-        if (self.positionX + 1 > self.n):
+    def travel_east(self):
+        if self.positionX + 1 > self.n:
             return 0
-        if (self.visited[self.positionY][self.positionX + 1] == 1):
+        if self.visited[self.positionY][self.positionX + 1] == 1:
             return 0
 
-        self.savePosition()
+        self.save_position()
 
         #moving
         self.positionX = self.positionX + 1
         self.update_visited()
         return 1
 
-    def travelSouth(self):
-        if (self.positionY + 1 > self.m):
-            return
-        if (self.visited[self.positionY + 1][self.positionX] == 1):
+    def travel_south(self):
+        if self.positionY + 1 > self.m:
+            return 0
+        if self.visited[self.positionY + 1][self.positionX] == 1:
             return 0
 
-        self.savePosition()
+        self.save_position()
 
         #moving
         self.positionY = self.positionY + 1
         self.update_visited()
         return 1
 
-    def travelWest(self):
-        if (self.positionX - 1 < 0):
-            return
-        if (self.visited[self.positionY][self.positionX - 1] == 1):
+    def travel_west(self):
+        if self.positionX - 1 < 0:
+            return 0
+        if self.visited[self.positionY][self.positionX - 1] == 1:
             return 0
 
-        self.savePosition()
+        self.save_position()
 
         #moving
         self.positionX = self.positionX -1
         self.update_visited()
         return 1
 
-    def savePosition(self):
+    def save_position(self):
         position = (self.positionY, self.positionX)
         self.stack.append(position)
 
