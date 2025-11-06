@@ -5,6 +5,7 @@ from AlgorithmLogger import AlgorithmLogger
 from Position import Position
 
 class BfsAlgorithm:
+
     def __init__(self, labyrinth):
         self.labyrinth = labyrinth
 
@@ -82,8 +83,7 @@ class BfsAlgorithm:
             path,
             execution_time,
             peak_memory_kb,
-            total_visited,
-            max_frontier_size=max_queue_size
+            total_visited
         )
 
         return result
