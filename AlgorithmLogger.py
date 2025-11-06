@@ -3,6 +3,7 @@ import time
 import tracemalloc
 
 class AlgorithmLogger:
+
     def __init__(self, method_name, n, m):
         self.peak_memory_kb = None
         self.execution_time = None
@@ -14,11 +15,6 @@ class AlgorithmLogger:
         os.makedirs(self.directory, exist_ok=True)
 
         self.filename = f'{self.directory}/{n}x{m}_{method_name}.txt'
-
-        self.logs = []
-
-    def log(self, text):
-        self.logs.append(text)
 
     def start_measure(self):
         tracemalloc.start()
