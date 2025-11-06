@@ -1,17 +1,37 @@
+import copy
+from AlgorithmLogger import AlgorithmLogger
+from typing import List
+
 class Theseus:
-    #TODO: usunąć walidację ruchu z metod travel
-    #TODO: obsłużyć wyjątek w którym nie ma drogi do mety
+    # 0 - north
+    # 1 - south
+    # 2 - east
+    # 3 - west
+    moves = (
+        (-1, 0),
+        (1, 0),
+        (0, 1),
+        (0, -1)
+    )
+
+    #labyrinth data
     matrix = (())
     n = 0
     m = 0
+
+    #position of theseus
     positionX:int = 0
     positionY:int = 0
 
     #logic matrix
     visited = [[]]
     #visited tiles for backtracking
-    stack = []
+    stack: List[List[int]] = []
 
+    #stats
+    move_count:int = 0
+    move_validation_count:int = 0
+    total_visited:int = 0
 
     def __init__(self, matrix, n, m):
         self.matrix = matrix
@@ -23,58 +43,68 @@ class Theseus:
 
 
     #dfs no heuristic
-    # TODO: Dodać sprawdzanie czy wchodzi w krawędź
-    def solve(self, startX, startY):
-        if startX < 0 or startY < 0:
+    def solve(self, start_x, start_y):
+        if start_x < 0 or start_y < 0:
                 print("Starting position below bounds, exiting")
                 return
-        if startX > self.m or startY > self.n:
+        if start_x > self.m or start_y > self.n:
                 print("Starting position above bounds, exiting")
                 return
-        self.update_visited()
-        while(self.positionX != self.n or self.positionY != self.m):
-            if self.travelNorth():
-                print("Idzie na północ")
-                continue
-            if self.travelEast():
-                print("Idzie na wschód")
-                continue
-            if self.travelSouth():
-                print("Idzie na południe")
-                continue
-            if self.travelWest():
-                print("Idzie na zachód")
-                continue
 
-            #if no moves available, backtrack and try again
-            previous_position = self.stack.pop()
-            self.positionX = previous_position[1]
-            self.positionY = previous_position[0]
-
-        print("Zakonczono labiryntowanie")
-        print(self.visited)
-
-    #dfs with heuristic
-    def solve_with_heuristic(self, startX, startY):
-        if startX < 0 or startY < 0:
-                print("Starting position below bounds, exiting")
-                return
-        if startX > self.m or startY > self.n:
-                print("Starting position above bounds, exiting")
-                return
+        logger = AlgorithmLogger("solve", self.n+1, self.m+1)
+        logger.start_measure()
         #starting position is always visited
         self.update_visited()
-        while(self.positionX != self.n or self.positionY != self.m):
-            # 0 - north
-            # 1 - south
-            # 2 - east
-            # 3 - west
-            moves = (
-                (-1,0),
-                (1,0),
-                (0,1),
-                (0,-1)
-            )
+
+        while self.positionX != self.n or self.positionY != self.m:
+            #For selecting next direction. If at -1, then backtracks
+            fdirection = -1
+
+            for i in range(4):
+                y = self.moves[i][0]
+                x = self.moves[i][1]
+
+                # move is valid, exit loop and make a move
+                if self.validate_move(y,x):
+                    fdirection = i
+                    break
+
+            # makes a move
+            match fdirection:
+                case -1:
+                    # backtrack
+                    if len(self.stack) == 0:
+                        print("No solution")
+                        break
+                    self.move_count += 1
+                    previous_position = self.stack.pop()
+                    self.positionY = previous_position[0]
+                    self.positionX = previous_position[1]
+                case 0:
+                    self.travel_north()
+                case 1:
+                    self.travel_south()
+                case 2:
+                    self.travel_east()
+                case 3:
+                    self.travel_west()
+        logger.stop_measure()
+        self._print_summary(logger)
+
+    #dfs with heuristic
+    def solve_with_heuristic(self, start_x, start_y):
+        if start_x < 0 or start_y < 0:
+                print("Starting position below bounds, exiting")
+                return
+        if start_x > self.m or start_y > self.n:
+                print("Starting position above bounds, exiting")
+                return
+
+        logger = AlgorithmLogger("solve_with_heuristic", self.n+1, self.m+1)
+        logger.start_measure()
+        #starting position is always visited
+        self.update_visited()
+        while self.positionX != self.n or self.positionY != self.m:
 
             #calculates distance in tiles to finish
             distance = self.n + self.m
@@ -82,20 +112,11 @@ class Theseus:
             fdirection = -1
 
             for i in range(4):
-                y = moves[i][0]
-                x = moves[i][1]
+                y = self.moves[i][0]
+                x = self.moves[i][1]
 
-                #if next move is below bounds
-                if (self.positionY + y < 0 or self.positionX + x < 0):
-                    continue
-                #if next move is above bounds
-                if (self.positionY + y > self.m or self.positionX + x > self.n):
-                    continue
-                #if has been visited
-                if (self.visited[self.positionY + y][self.positionX + x] == 1):
-                    continue
-                #if there is an obstacle
-                if (self.matrix[self.positionY + y][self.positionX + x] == 1):
+                #move is not valid
+                if not self.validate_move(y, x):
                     continue
 
                 #move is valid, calculate its distance to finish
@@ -109,76 +130,110 @@ class Theseus:
             match fdirection:
                 case -1:
                     #backtrack
+                    if len(self.stack) == 0:
+                        print("No solution found")
+                        break
                     previous_position = self.stack.pop()
+                    self.move_count += 1
                     self.positionX = previous_position[1]
                     self.positionY = previous_position[0]
                 case 0:
-                    self.travelNorth()
+                    self.travel_north()
                 case 1:
-                    self.travelSouth()
+                    self.travel_south()
                 case 2:
-                    self.travelEast()
+                    self.travel_east()
                 case 3:
-                    self.travelWest()
+                    self.travel_west()
 
-        print("Zakonczono labiryntowanie")
-        print(self.visited)
+        logger.stop_measure()
+        self._print_summary(logger)
 
-    def travelNorth(self):
-        if (self.positionY - 1 < 0):
-            return 0
-        if (self.visited[self.positionY - 1][self.positionX] == 1):
-            return 0
+    def validate_move(self, y:int, x:int) -> bool:
+        self.move_validation_count += 1
 
-        self.savePosition()
+        # if next move is below bounds
+        if self.positionY + y < 0 or self.positionX + x < 0:
+            return False
+        # if next move is above bounds
+        if self.positionY + y > self.m or self.positionX + x > self.n:
+            return False
+        # if has been visited
+        if self.visited[self.positionY + y][self.positionX + x] == 1:
+            return False
+        # if there is an obstacle
+        if self.matrix[self.positionY + y][self.positionX + x] == 1:
+            return False
+        return True
+
+    def travel_north(self):
+        self.save_position()
 
         #moving
         self.positionY = self.positionY - 1
         self.update_visited()
-        return 1
 
-    def travelEast(self):
-        if (self.positionX + 1 > self.n):
-            return 0
-        if (self.visited[self.positionY][self.positionX + 1] == 1):
-            return 0
+        self.total_visited += 1
+        self.move_count += 1
 
-        self.savePosition()
+    def travel_east(self):
+        self.save_position()
 
         #moving
         self.positionX = self.positionX + 1
         self.update_visited()
-        return 1
 
-    def travelSouth(self):
-        if (self.positionY + 1 > self.m):
-            return
-        if (self.visited[self.positionY + 1][self.positionX] == 1):
-            return 0
+        self.total_visited += 1
+        self.move_count += 1
 
-        self.savePosition()
+    def travel_south(self):
+        self.save_position()
 
         #moving
         self.positionY = self.positionY + 1
         self.update_visited()
-        return 1
 
-    def travelWest(self):
-        if (self.positionX - 1 < 0):
-            return
-        if (self.visited[self.positionY][self.positionX - 1] == 1):
-            return 0
+        self.total_visited += 1
+        self.move_count += 1
 
-        self.savePosition()
+    def travel_west(self):
+        self.save_position()
 
         #moving
         self.positionX = self.positionX -1
         self.update_visited()
-        return 1
 
-    def savePosition(self):
+        self.total_visited += 1
+        self.move_count += 1
+
+    def save_position(self):
         position = (self.positionY, self.positionX)
         self.stack.append(position)
 
     def update_visited(self):
         self.visited[self.positionY][self.positionX] = 1
+
+    def _print_summary(self, logger:AlgorithmLogger):
+        print("Labyrinth finished")
+        print("Move validation count: " + str(self.move_validation_count))
+        print("Move count: " + str(self.move_count))
+        self.move_validation_count = 0
+        self.move_count = 0
+
+        final_map = copy.deepcopy(self.matrix)
+
+        for i in range(len(self.matrix)):
+            for j in range(len(self.matrix)):
+                final_map[i][j] = self.matrix[i][j]
+                if self.visited[i][j] != 0:
+                    final_map[i][j] = 2
+
+        for position in self.stack:
+            y = position[0]
+            x = position[1]
+
+            final_map[y][x] = 3
+
+        logger.save(final_map, self.stack, self.total_visited)
+        self.total_visited = 0
+

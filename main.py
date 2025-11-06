@@ -11,5 +11,9 @@ labyrinth5 = Labyrinth('data/4096x5120.txt')
 # bfs = BfsAlgorithm(labyrinth1)
 # bfs.solve(heuristic=False)
 
-# theseus = Theseus(labyrinth1.matrix, labyrinth1.n, labyrinth1.m)
-# theseus.solve(0,0)
+theseus = Theseus(labyrinth1.matrix, labyrinth1.n, labyrinth1.m)
+#theseus.solve(0,0)
+theseus.solve_with_heuristic(0,0)
+
+# bfs = bfs_algorithm.solve(labirynt1)
+# print(bfs)
