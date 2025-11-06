@@ -1,9 +1,21 @@
 class Theseus:
-    #TODO: usunąć walidację ruchu z metod travel
-    #TODO: obsłużyć wyjątek w którym nie ma drogi do mety
+    # 0 - north
+    # 1 - south
+    # 2 - east
+    # 3 - west
+    moves = (
+        (-1, 0),
+        (1, 0),
+        (0, 1),
+        (0, -1)
+    )
+
+    #labyrinth data
     matrix = (())
     n = 0
     m = 0
+
+    #position of theseus
     positionX:int = 0
     positionY:int = 0
 
@@ -23,7 +35,6 @@ class Theseus:
 
 
     #dfs no heuristic
-    # TODO: Dodać sprawdzanie czy wchodzi w krawędź
     def solve(self, start_x, start_y):
         if start_x < 0 or start_y < 0:
                 print("Starting position below bounds, exiting")
@@ -31,27 +42,51 @@ class Theseus:
         if start_x > self.m or start_y > self.n:
                 print("Starting position above bounds, exiting")
                 return
+        #starting position is always visited
         self.update_visited()
+
         while self.positionX != self.n or self.positionY != self.m:
-            if self.travel_north():
-                print("Idzie na północ")
-                continue
-            if self.travel_east():
-                print("Idzie na wschód")
-                continue
-            if self.travel_south():
-                print("Idzie na południe")
-                continue
-            if self.travel_west():
-                print("Idzie na zachód")
-                continue
+            #For selecting next direction. If at -1, then backtracks
+            fdirection = -1
+
+            for i in range(4):
+                y = self.moves[i][0]
+                x = self.moves[i][1]
+
+                # move is not valid
+                if not self.validate_move(y, x):
+                    continue
+
+                # makes a move
+                match fdirection:
+                    case -1:
+                        # backtrack
+                        if len(self.stack) == 0:
+                            print("Nie ma rozwiązania")
+                            break
+                        previous_position = self.stack.pop()
+                        self.positionX = previous_position[1]
+                        self.positionY = previous_position[0]
+                        break
+                    case 0:
+                        self.travel_north()
+                        break
+                    case 1:
+                        self.travel_south()
+                        break
+                    case 2:
+                        self.travel_east()
+                        break
+                    case 3:
+                        self.travel_west()
+                        break
 
             #if no moves available, backtrack and try again
             previous_position = self.stack.pop()
             self.positionX = previous_position[1]
             self.positionY = previous_position[0]
 
-        print("Zakonczono labiryntowanie")
+        print("Labyrinth solved")
         print(self.visited)
 
     #dfs with heuristic
@@ -65,16 +100,6 @@ class Theseus:
         #starting position is always visited
         self.update_visited()
         while self.positionX != self.n or self.positionY != self.m:
-            # 0 - north
-            # 1 - south
-            # 2 - east
-            # 3 - west
-            moves = (
-                (-1,0),
-                (1,0),
-                (0,1),
-                (0,-1)
-            )
 
             #calculates distance in tiles to finish
             distance = self.n + self.m
@@ -82,20 +107,11 @@ class Theseus:
             fdirection = -1
 
             for i in range(4):
-                y = moves[i][0]
-                x = moves[i][1]
+                y = self.moves[i][0]
+                x = self.moves[i][1]
 
-                #if next move is below bounds
-                if self.positionY + y < 0 or self.positionX + x < 0:
-                    continue
-                #if next move is above bounds
-                if self.positionY + y > self.m or self.positionX + x > self.n:
-                    continue
-                #if has been visited
-                if self.visited[self.positionY + y][self.positionX + x] == 1:
-                    continue
-                #if there is an obstacle
-                if self.matrix[self.positionY + y][self.positionX + x] == 1:
+                #move is not valid
+                if not self.validate_move(y, x):
                     continue
 
                 #move is valid, calculate its distance to finish
@@ -109,6 +125,9 @@ class Theseus:
             match fdirection:
                 case -1:
                     #backtrack
+                    if len(self.stack) == 0:
+                        print("Nie ma rozwiązania")
+                        break
                     previous_position = self.stack.pop()
                     self.positionX = previous_position[1]
                     self.positionY = previous_position[0]
@@ -121,60 +140,51 @@ class Theseus:
                 case 3:
                     self.travel_west()
 
-        print("Zakonczono labiryntowanie")
+        print("Labyrinth solved")
         print(self.visited)
 
-    def travel_north(self):
-        if self.positionY - 1 < 0:
-            return 0
-        if self.visited[self.positionY - 1][self.positionX] == 1:
-            return 0
+    def validate_move(self, y:int, x:int) -> bool:
+        # if next move is below bounds
+        if self.positionY + y < 0 or self.positionX + x < 0:
+            return False
+        # if next move is above bounds
+        if self.positionY + y > self.m or self.positionX + x > self.n:
+            return False
+        # if has been visited
+        if self.visited[self.positionY + y][self.positionX + x] == 1:
+            return False
+        # if there is an obstacle
+        if self.matrix[self.positionY + y][self.positionX + x] == 1:
+            return False
+        return True
 
+    def travel_north(self):
         self.save_position()
 
         #moving
         self.positionY = self.positionY - 1
         self.update_visited()
-        return 1
 
     def travel_east(self):
-        if self.positionX + 1 > self.n:
-            return 0
-        if self.visited[self.positionY][self.positionX + 1] == 1:
-            return 0
-
         self.save_position()
 
         #moving
         self.positionX = self.positionX + 1
         self.update_visited()
-        return 1
 
     def travel_south(self):
-        if self.positionY + 1 > self.m:
-            return 0
-        if self.visited[self.positionY + 1][self.positionX] == 1:
-            return 0
-
         self.save_position()
 
         #moving
         self.positionY = self.positionY + 1
         self.update_visited()
-        return 1
 
     def travel_west(self):
-        if self.positionX - 1 < 0:
-            return 0
-        if self.visited[self.positionY][self.positionX - 1] == 1:
-            return 0
-
         self.save_position()
 
         #moving
         self.positionX = self.positionX -1
         self.update_visited()
-        return 1
 
     def save_position(self):
         position = (self.positionY, self.positionX)
