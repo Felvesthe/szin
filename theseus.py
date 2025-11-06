@@ -39,7 +39,6 @@ class Theseus:
         self.m = m - 1
 
         self.visited = [[0 for j in range(m)] for i in range(n)]
-        print(self.visited)
 
 
     #dfs no heuristic
