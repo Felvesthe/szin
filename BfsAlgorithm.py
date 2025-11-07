@@ -21,7 +21,9 @@ class BfsAlgorithm:
         total_visited_nodes = 0
 
         if not heuristic:
-            queue = deque([start]) # FIFO
+            queue = deque([start]) # deque to doubly linked list,
+                                   # późniejsze użycie popleft ma złożoność O(1),
+                                   # gdyby to była zwykła lista to metoda pop ma złożoność O(n)
         else:
             queue = []
             counter = 0
@@ -55,6 +57,8 @@ class BfsAlgorithm:
                     else:
                         h = abs(neighbor.x - finish.x) + abs(neighbor.y - finish.y)
                         counter += 1
+                        # Greedy Best-First Search - algorytm wybiera pole, które jest najbliżej celu wg heurystyki
+                        # Nie uwzględnia długości drogi od startu
                         heappush(queue, (h, counter, neighbor))
 
         # sprawdzamy, czy punkt końcowy był odwiedzony, jeśli tak, to jest zapisywana ścieżka powrotna do result,
