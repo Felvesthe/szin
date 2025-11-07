@@ -1,7 +1,7 @@
 def read_from_file(file_path):
     with open(file_path) as f:
         n, m = map(int, f.readline().split())
-        matrix = [list(map(int, f.readline().split())) for _ in range(m)]
+        matrix = [list(map(int, f.readline().split())) for _ in range(n)]
     return n, m, matrix
 
 class Labyrinth:
