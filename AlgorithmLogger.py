@@ -21,7 +21,7 @@ class AlgorithmLogger:
         self.start_time = time.perf_counter()
 
     def stop_measure(self):
-        current_memory, peak_memory = tracemalloc.get_traced_memory()
+        _, peak_memory = tracemalloc.get_traced_memory()
         tracemalloc.stop()
         end_time = time.perf_counter()
 
