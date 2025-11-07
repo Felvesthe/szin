@@ -1,6 +1,7 @@
 import copy
 from AlgorithmLogger import AlgorithmLogger
 from typing import List
+from Labyrinth import Labyrinth
 
 class Theseus:
     # 0 - north
@@ -33,13 +34,12 @@ class Theseus:
     move_validation_count:int = 0
     total_visited:int = 0
 
-    def __init__(self, matrix, n, m):
-        self.matrix = matrix
-        self.n = n - 1
-        self.m = m - 1
+    def __init__(self, labyrinth: Labyrinth):
+        self.matrix = labyrinth.matrix
+        self.n = labyrinth.n - 1
+        self.m = labyrinth.m - 1
 
-        self.visited = [[0 for j in range(m)] for i in range(n)]
-        print(self.visited)
+        self.visited = [[0 for _ in row] for row in self.matrix]
 
 
     #dfs no heuristic
@@ -56,7 +56,7 @@ class Theseus:
         #starting position is always visited
         self.update_visited()
 
-        while self.positionX != self.n or self.positionY != self.m:
+        while self.positionX != self.m or self.positionY != self.n:
             #For selecting next direction. If at -1, then backtracks
             fdirection = -1
 
@@ -104,7 +104,7 @@ class Theseus:
         logger.start_measure()
         #starting position is always visited
         self.update_visited()
-        while self.positionX != self.n or self.positionY != self.m:
+        while self.positionX != self.m or self.positionY != self.n:
 
             #calculates distance in tiles to finish
             distance = self.n + self.m
@@ -132,6 +132,8 @@ class Theseus:
                     #backtrack
                     if len(self.stack) == 0:
                         print("No solution found")
+                        print(str(self.positionX))
+                        print(str(self.positionY))
                         break
                     previous_position = self.stack.pop()
                     self.move_count += 1
@@ -156,7 +158,7 @@ class Theseus:
         if self.positionY + y < 0 or self.positionX + x < 0:
             return False
         # if next move is above bounds
-        if self.positionY + y > self.m or self.positionX + x > self.n:
+        if self.positionY + y > self.n or self.positionX + x > self.m:
             return False
         # if has been visited
         if self.visited[self.positionY + y][self.positionX + x] == 1:
@@ -222,8 +224,8 @@ class Theseus:
 
         final_map = copy.deepcopy(self.matrix)
 
-        for i in range(len(self.matrix)):
-            for j in range(len(self.matrix)):
+        for i in range(self.n+1):
+            for j in range(self.m+1):
                 final_map[i][j] = self.matrix[i][j]
                 if self.visited[i][j] != 0:
                     final_map[i][j] = 2
