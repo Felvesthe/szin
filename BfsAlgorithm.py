@@ -77,8 +77,6 @@ class BfsAlgorithm:
             total_visited_nodes
         )
 
-        return result
-
     def create_logger_instance(self, heuristic = False):
         return AlgorithmLogger('bfs_with_heuristic' if heuristic else 'bfs', self.labyrinth.n, self.labyrinth.m)
 
